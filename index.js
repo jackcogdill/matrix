@@ -70,9 +70,8 @@ async function rain(_options = {}) {
     // Colors
     // ================================
     const normal = '#5CFF5C';
-    const brightA = '#43B943';
-    const brightB = '#8F8';
-    const brightC = '#AFA';
+    const brightA = '#8F8';
+    const brightB = '#AFA';
 
     // Display Constants
     // ================================
@@ -125,6 +124,13 @@ async function rain(_options = {}) {
     let numFinished = 0;
     let shouldStop = false;
 
+    function addShadow() {
+        ctx.shadowColor = 'white';
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        ctx.shadowBlur = 12;
+    }
+
     function resetShadow() {
         ctx.shadowColor = '';
         ctx.shadowBlur = 0;
@@ -138,13 +144,15 @@ async function rain(_options = {}) {
 
     function fall() {
         drawBackground();
-        ctx.fillStyle = normal;
 
         drops = drops.map((drop, i) => {
             let { y, perma, done } = drop;
 
             // Letter in message reached its final position
             if (perma && Math.abs(y - textTop) < 0.0001) {
+                const char = message.charAt(i - textLeft);
+                const x = padding + i * glyphW;
+
                 if (!done) {
                     done = true;
                     numFinished++;
@@ -153,20 +161,36 @@ async function rain(_options = {}) {
                     if (numFinished > message.length / 2) {
                         shouldStop = true;
                     }
+
+                    addShadow();
+                    ctx.fillStyle = brightB;
+                    ctx.fillText(char, x, y);
+                    resetShadow();
+                } else {
+                    ctx.fillStyle = brightA;
+                    ctx.fillText(char, x, y);
                 }
-
-                const char = message.charAt(i - textLeft);
-                const x = padding + i * glyphW;
-
-                // Draw character
-                ctx.fillText(char, x, y);
             } else if (!done) {
                 const index = randInt(0, alpha.length);
                 const char = alpha.charAt(index);
                 const x = padding + i * glyphW;
 
-                // Draw character
-                ctx.fillText(char, x, y);
+                // Add random glowing glyphs (~3% chance)
+                if (Math.random() > 0.97) {
+                    // 1/3 Glowing white glyphs (white shadow)
+                    if (Math.random() > 0.67) {
+                        addShadow();
+                        ctx.fillStyle = brightB;
+                        ctx.fillText(char, x, y);
+                        resetShadow();
+                    } else { // 2/3 More subtle
+                        ctx.fillStyle = brightA;
+                        ctx.fillText(char, x, y);
+                    }
+                } else {
+                    ctx.fillStyle = normal;
+                    ctx.fillText(char, x, y);
+                }
 
                 const shouldReset = y > randInt(height, height * 1.667);
 
@@ -212,5 +236,4 @@ async function rain(_options = {}) {
 (async () => {
     setUp();
     await rain();
-    console.log('All done!');
 })();
