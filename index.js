@@ -83,7 +83,7 @@ function rain(options) {
             const x = unused / 2 + i * glyphW;
 
             // Draw character
-            ctx.fillStyle = 'green';
+            ctx.fillStyle = '#5CFF5C';
             ctx.fillText(char, x, y);
 
             // Reset if raindrop is some distance past bottom of screen
