@@ -27,20 +27,22 @@ function setUp() {
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 
-function rain(message, _options = {}) {
+function rain(_options = {}) {
     // Options
-    // ================
+    // ================================
     const defaults = {
+        message: 'H3110, W0R1D',
         fps: 35,
     };
     const options = Object.assign({}, defaults, _options);
 
-    // Constants
-    // ================
+    // Display Constants
+    // ================================
     const alpha = '0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
     const fsize = 14;
     const font = `${fsize}pt monospace`;
     const opacity = 0.05;
+    const background = `rgba(0, 0, 0, ${opacity})`;
     // Spacing between glyphs
     const hspace = 1.1;
     const vspace = 1.2;
@@ -48,31 +50,67 @@ function rain(message, _options = {}) {
     const glyphW = fsize * hspace;
     const glyphH = fsize * vspace;
 
-    // Initialization
-    // ================
-    const numDrops = Math.floor(width / glyphW);
+    // Initialization Variables
+    // ================================
+    const { message } = options;
+    let _numDrops = Math.floor(width / glyphW);
+    // Both 'numDrops' and 'message.length' must be either even or odd to easily center
+    if ((_numDrops + message.length) & 1) {
+        _numDrops--;
+    }
+    const numDrops = _numDrops;
+
     // Unused (horizontal) canvas space
     const unused = width - numDrops * glyphW + fsize * (hspace - 1);
-    // Initialize raindrops
-    const drops = [];
+    const padding = unused / 2; // Used to center all columns horizontally
+
+    const hmiddle = Math.floor(numDrops / 2); // Horizontal middle of the screen (in glyphs)
+    const halfText = Math.floor(message.length / 2);
+    const textLeft = hmiddle - halfText; // Raindrop column index to start message
+    const textRight = textLeft + message.length; // Raindrop column index to end message
+    // Vertical location on screen for text (50% of screen height)
+    const textTop = Math.floor(height / glyphH / 2) * glyphH;
+
+    // Raindrop Initialization
+    // ================================
+    let drops = [];
     for (let i = 0; i < numDrops; i++) {
-        const pos = randInt(0, height / glyphH) * glyphH;
-        drops.push(-pos);
+        // Start randomly above screen
+        let y = -1 * randInt(0, height / glyphH) * glyphH;
+        y += 0.1337; // Ensure no permanent letters align the first time
+
+        // Is this a column to display message in? (should become permanent)
+        const perma = (
+            i >= textLeft && i < textRight // Bounds
+            && message.charAt(i - textLeft) !== ' ' // Spaces are not permanent letters
+        );
+
+        const drop = [y, perma, false];
+        drops.push(drop);
     }
+    let numFinished = 0;
+    let shouldStop = false;
 
     function resetShadow() {
         ctx.shadowColor = '';
         ctx.shadowBlur = 0;
     }
 
+    // Enforce FPS
     const { fps } = options;
     const fpsInterval = 1000 / fps;
     let then = Date.now();
 
     (loop = () => {
+        // Base case
+        if (numFinished === numDrops) {
+            console.log('All done!');
+            return;
+        }
+
         requestAnimationFrame(loop);
 
-        // Enforce fps
+        // Enforce FPS
         const now = Date.now();
         const elapsed = now - then;
         if (elapsed <= fpsInterval) return;
@@ -80,31 +118,61 @@ function rain(message, _options = {}) {
 
         // Redraw background
         resetShadow();
-        ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
+        ctx.fillStyle = background;
         ctx.fillRect(0, 0, width, height);
 
         // Prepare to draw characters
         ctx.font = font;
         ctx.fillStyle = '#5CFF5C';
 
-        drops.map((y, i) => {
-            const index = randInt(0, alpha.length);
-            const char = alpha.charAt(index);
-            const x = unused / 2 + i * glyphW;
+        drops = drops.map((drop, i) => {
+            let [y, perma, done] = drop;
 
-            // Draw character
-            ctx.fillText(char, x, y);
+            // Letter in message reached its final position
+            if (perma && Math.abs(y - textTop) < 0.0001) {
+                if (!done) {
+                    done = true;
+                    numFinished++;
 
-            // Reset if raindrop is some distance past bottom of screen
-            const randHeight = randInt(height, height * 1.667);
-            drops[i] = y > randHeight ? 0 : y + glyphH;
+                    // Signal to stop the raining if half of the text has formed
+                    if (numFinished > message.length / 2) {
+                        shouldStop = true;
+                    }
+                }
+
+                const char = message.charAt(i - textLeft);
+                const x = padding + i * glyphW;
+
+                // Draw character
+                ctx.fillText(char, x, y);
+            } else if (!done) {
+                const index = randInt(0, alpha.length);
+                const char = alpha.charAt(index);
+                const x = padding + i * glyphW;
+
+                // Draw character
+                ctx.fillText(char, x, y);
+
+                if (shouldStop && !perma) {
+                    if (y > height) {
+                        done = true;
+                        numFinished++;
+                    } else if (y >= 0) {
+                        y += glyphH;
+                    }
+                } else {
+                    // Reset if raindrop is some random distance past bottom of screen
+                    const randHeight = randInt(height, height * 1.667);
+                    y = y > randHeight ? 0 : y + glyphH;
+                }
+            }
+
+            return [y, perma, done];
         });
     })();
 }
 
 (() => {
-    const message = 'WELCOME';
-
     setUp();
-    rain(message);
+    rain();
 })();
