@@ -4,13 +4,13 @@ function randInt(min, max) {
     return min + Math.floor(Math.random() * (max - min));
 }
 
-function animate(innerFunction, shouldContinue, fps = 35) {
+function animate(innerFunction, baseCase, fps = 35) {
     const fpsInterval = 1000 / fps;
     let then = Date.now();
+    let done = false;
 
     function loop(callback) {
-        // Base case
-        if (!shouldContinue()) {
+        if (done) {
             callback();
             return;
         }
@@ -23,7 +23,7 @@ function animate(innerFunction, shouldContinue, fps = 35) {
         if (elapsed <= fpsInterval) return;
         then = now - (elapsed % fpsInterval);
 
-        innerFunction();
+        baseCase() ? done = true : innerFunction();
     }
 
     return new Promise(resolve => loop(resolve));
@@ -65,11 +65,19 @@ async function rain(_options = {}) {
     };
     const options = Object.assign({}, defaults, _options);
 
+    const alpha = '0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
+
+    // Colors
+    // ================================
+    const normal = '#5CFF5C';
+    const brightA = '#43B943';
+    const brightB = '#8F8';
+    const brightC = '#AFA';
+
     // Display Constants
     // ================================
-    const alpha = '0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
     const fsize = 14;
-    const font = `${fsize}pt monospace`;
+    ctx.font = `${fsize}pt monospace`;
     const opacity = 0.05;
     const background = `rgba(0, 0, 0, ${opacity})`;
     // Spacing between glyphs
@@ -113,8 +121,7 @@ async function rain(_options = {}) {
             && message.charAt(i - textLeft) !== ' ' // Spaces are not permanent letters
         );
 
-        const drop = [y, perma, false];
-        drops.push(drop);
+        drops.push({ y: y, perma: perma, done: false });
     }
     let numFinished = 0;
     let shouldStop = false;
@@ -124,18 +131,18 @@ async function rain(_options = {}) {
         ctx.shadowBlur = 0;
     }
 
-    function fall() {
-        // Redraw background
+    function drawBackground() {
         resetShadow();
         ctx.fillStyle = background;
         ctx.fillRect(0, 0, width, height);
+    }
 
-        // Prepare to draw characters
-        ctx.font = font;
-        ctx.fillStyle = '#5CFF5C';
+    function fall() {
+        drawBackground();
+        ctx.fillStyle = normal;
 
         drops = drops.map((drop, i) => {
-            let [y, perma, done] = drop;
+            let { y, perma, done } = drop;
 
             // Letter in message reached its final position
             if (perma && Math.abs(y - textTop) < 0.0001) {
@@ -176,11 +183,31 @@ async function rain(_options = {}) {
                 }
             }
 
-            return [y, perma, done];
+            return { y, perma, done };
         });
     }
 
-    await animate(fall, () => numFinished < numDrops);
+    await animate(fall, () => numFinished === numDrops);
+
+    function drawPerma() {
+        ctx.fillStyle = normal;
+
+        drops.forEach(({ y, perma }, i) => {
+            if (perma) {
+                const char = message.charAt(i - textLeft);
+                const x = padding + i * glyphW;
+                ctx.fillText(char, x, y);
+            }
+        });
+    }
+
+    function fade() {
+        drawBackground();
+        drawPerma();
+    }
+
+    let i = 0;
+    await animate(fade, () => i++ === 35);
 }
 
 function blacken(iter = 15) {
