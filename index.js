@@ -1,7 +1,36 @@
+// Util functions
+// ================================
 function randInt(min, max) {
     return min + Math.floor(Math.random() * (max - min));
 }
 
+function animate(innerFunction, shouldContinue, fps = 35) {
+    const fpsInterval = 1000 / fps;
+    let then = Date.now();
+
+    function loop(callback) {
+        // Base case
+        if (!shouldContinue()) {
+            callback();
+            return;
+        }
+
+        requestAnimationFrame(() => loop(callback));
+
+        // Enforce FPS
+        const now = Date.now();
+        const elapsed = now - then;
+        if (elapsed <= fpsInterval) return;
+        then = now - (elapsed % fpsInterval);
+
+        innerFunction();
+    }
+
+    return new Promise(resolve => loop(resolve));
+}
+
+// Main functions
+// ================================
 function setUp() {
     const canvas = document.getElementsByTagName('canvas')[0];
 
@@ -27,7 +56,7 @@ function setUp() {
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 
-function rain(_options = {}) {
+async function rain(_options = {}) {
     // Options
     // ================================
     const defaults = {
@@ -95,30 +124,7 @@ function rain(_options = {}) {
         ctx.shadowBlur = 0;
     }
 
-    // FPS Setup
-    // ================================
-    const { fps } = options;
-    const fpsInterval = 1000 / fps;
-    let then = Date.now();
-
-    let callbackAfterRain;
-
-    function loop(callback) {
-        // Base case
-        if (numFinished === numDrops) {
-            callback();
-            return;
-        }
-
-        // Animation
-        // ================================
-        requestAnimationFrame(() => loop(callback));
-        // Enforce FPS
-        const now = Date.now();
-        const elapsed = now - then;
-        if (elapsed <= fpsInterval) return;
-        then = now - (elapsed % fpsInterval);
-
+    function fall() {
         // Redraw background
         resetShadow();
         ctx.fillStyle = background;
@@ -174,9 +180,7 @@ function rain(_options = {}) {
         });
     }
 
-    return new Promise((resolve, reject) => {
-        loop(resolve);
-    });
+    await animate(fall, () => numFinished < numDrops);
 }
 
 function blacken(iter = 15) {
