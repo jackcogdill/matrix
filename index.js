@@ -47,6 +47,7 @@ function setUp() {
     window.width = window.innerWidth;
     window.height = window.innerHeight;
     window.ctx = canvas.getContext('2d');
+    window.isMobile = screen.width <= 768;
 
     // Modify canvas to be high DPI
     // Lovingly adapted from http://stackoverflow.com/a/15666143/1313757
@@ -71,7 +72,7 @@ async function rain(_options = {}) {
     // ================================
     const defaults = {
         message: 'H3110, W0R1D',
-        fps: 35,
+        fps: isMobile ? 30 : 35,
     };
     const options = Object.assign({}, defaults, _options);
 
@@ -85,7 +86,7 @@ async function rain(_options = {}) {
 
     // Display Constants
     // ================================
-    const fsize = 14;
+    const fsize = isMobile ? 48 : 14;
     ctx.font = `${fsize}pt monospace`;
     const background = 'rgba(0, 0, 0, 0.05)';
     // Spacing between glyphs
@@ -233,5 +234,6 @@ async function rain(_options = {}) {
 
 (async () => {
     setUp();
-    await rain();
+    const message = isMobile ? 'WELCOME' : 'WELCOME, VISITOR';
+    await rain({ message });
 })();
