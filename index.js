@@ -137,7 +137,6 @@ async function rain(_options = {}) {
     }
 
     function drawBackground() {
-        resetShadow();
         ctx.fillStyle = background;
         ctx.fillRect(0, 0, width, height);
     }
@@ -175,22 +174,10 @@ async function rain(_options = {}) {
                 const char = alpha.charAt(index);
                 const x = padding + i * glyphW;
 
-                // Add random glowing glyphs (~3% chance)
-                if (Math.random() > 0.97) {
-                    // 1/3 Glowing white glyphs (white shadow)
-                    if (Math.random() > 0.67) {
-                        addShadow();
-                        ctx.fillStyle = brightB;
-                        ctx.fillText(char, x, y);
-                        resetShadow();
-                    } else { // 2/3 More subtle
-                        ctx.fillStyle = brightA;
-                        ctx.fillText(char, x, y);
-                    }
-                } else {
-                    ctx.fillStyle = normal;
-                    ctx.fillText(char, x, y);
-                }
+                ctx.fillStyle = (Math.random() > 0.97) ?
+                    (Math.random() > 0.67) ? brightB : brightA
+                    : normal;
+                ctx.fillText(char, x, y);
 
                 const shouldReset = y > randInt(height, height * 1.667);
 
