@@ -78,8 +78,7 @@ async function rain(_options = {}) {
     // ================================
     const fsize = 14;
     ctx.font = `${fsize}pt monospace`;
-    const opacity = 0.05;
-    const background = `rgba(0, 0, 0, ${opacity})`;
+    const background = 'rgba(0, 0, 0, 0.05)';
     // Spacing between glyphs
     const hspace = 1.1;
     const vspace = 1.2;
@@ -169,25 +168,23 @@ async function rain(_options = {}) {
                 // Draw character
                 ctx.fillText(char, x, y);
 
-                if (shouldStop && !perma) {
-                    if (y > height) {
+                const shouldReset = y > randInt(height, height * 1.667);
+
+                if (shouldReset) {
+                    if (shouldStop && !perma) {
                         done = true;
                         numFinished++;
-                    } else if (y >= 0) {
-                        y += glyphH;
+                    } else {
+                        y = 0;
                     }
                 } else {
-                    // Reset if raindrop is some random distance past bottom of screen
-                    const randHeight = randInt(height, height * 1.667);
-                    y = y > randHeight ? 0 : y + glyphH;
+                    y += glyphH;
                 }
             }
 
             return { y, perma, done };
         });
     }
-
-    await animate(fall, () => numFinished === numDrops);
 
     function drawPerma() {
         ctx.fillStyle = normal;
@@ -206,19 +203,10 @@ async function rain(_options = {}) {
         drawPerma();
     }
 
+    await animate(fall, () => numFinished === numDrops);
+
     let i = 0;
     await animate(fade, () => i++ === 35);
-}
-
-function blacken(iter = 15) {
-    const step = 1 / iter;
-    for (let opacity = 0; opacity < 1; opacity += step) {
-        ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
-        ctx.fillRect(0, 0, width, height);
-    }
-
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, width, height);
 }
 
 (async () => {
