@@ -27,13 +27,20 @@ function setUp() {
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 
-function rain(options) {
-    const alpha = '0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
+function rain(message, _options = {}) {
+    // Options
+    // ================
+    const defaults = {
+        fps: 35,
+    };
+    const options = Object.assign({}, defaults, _options);
 
+    // Constants
+    // ================
+    const alpha = '0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
     const fsize = 14;
     const font = `${fsize}pt monospace`;
     const opacity = 0.05;
-
     // Spacing between glyphs
     const hspace = 1.1;
     const vspace = 1.2;
@@ -41,11 +48,11 @@ function rain(options) {
     const glyphW = fsize * hspace;
     const glyphH = fsize * vspace;
 
+    // Initialization
+    // ================
     const numDrops = Math.floor(width / glyphW);
-
     // Unused (horizontal) canvas space
     const unused = width - numDrops * glyphW + fsize * (hspace - 1);
-
     // Initialize raindrops
     const drops = [];
     for (let i = 0; i < numDrops; i++) {
@@ -58,7 +65,8 @@ function rain(options) {
         ctx.shadowBlur = 0;
     }
 
-    const fpsInterval = 1000 / options.fps;
+    const { fps } = options;
+    const fpsInterval = 1000 / fps;
     let then = Date.now();
 
     (loop = () => {
@@ -75,15 +83,16 @@ function rain(options) {
         ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
         ctx.fillRect(0, 0, width, height);
 
+        // Prepare to draw characters
         ctx.font = font;
+        ctx.fillStyle = '#5CFF5C';
 
         drops.map((y, i) => {
-            const index = Math.floor(Math.random() * alpha.length);
+            const index = randInt(0, alpha.length);
             const char = alpha.charAt(index);
             const x = unused / 2 + i * glyphW;
 
             // Draw character
-            ctx.fillStyle = '#5CFF5C';
             ctx.fillText(char, x, y);
 
             // Reset if raindrop is some distance past bottom of screen
@@ -94,9 +103,8 @@ function rain(options) {
 }
 
 (() => {
-    const options = {
-        fps: 35, // (Speed)
-    };
+    const message = 'WELCOME';
+
     setUp();
-    rain(options);
+    rain(message);
 })();
