@@ -179,6 +179,17 @@ function rain(_options = {}) {
     });
 }
 
+function blacken(iter = 15) {
+    const step = 1 / iter;
+    for (let opacity = 0; opacity < 1; opacity += step) {
+        ctx.fillStyle = `rgba(0, 0, 0, ${opacity})`;
+        ctx.fillRect(0, 0, width, height);
+    }
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, width, height);
+}
+
 (async () => {
     setUp();
     await rain();
