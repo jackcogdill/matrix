@@ -3,11 +3,11 @@ function randInt(min, max) {
 }
 
 function setUp() {
-    const canvas = document.getElementsByTagName("canvas")[0];
+    const canvas = document.getElementsByTagName('canvas')[0];
 
     window.width = window.innerWidth;
     window.height = window.innerHeight;
-    window.ctx = canvas.getContext("2d");
+    window.ctx = canvas.getContext('2d');
 
     // Modify canvas to be high DPI
     // Lovingly adapted from http://stackoverflow.com/a/15666143/1313757
@@ -22,13 +22,13 @@ function setUp() {
 
     canvas.width = width * ratio;
     canvas.height = height * ratio;
-    canvas.style.width = width + "px";
-    canvas.style.height = height + "px";
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 
 function rain(options) {
-    const alpha = "0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ";
+    const alpha = '0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
 
     const fsize = 14;
     const font = `${fsize}pt monospace`;
@@ -54,7 +54,7 @@ function rain(options) {
     }
 
     function resetShadow() {
-        ctx.shadowColor = "";
+        ctx.shadowColor = '';
         ctx.shadowBlur = 0;
     }
 
