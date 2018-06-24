@@ -27,16 +27,16 @@ function setUp() {
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 }
 
-function rain() {
+function rain(options) {
     const alpha = "0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ";
 
-    const fsize = 10;
+    const fsize = 14;
     const font = `${fsize}pt 'Hack', 'Ubuntu Light', monospace`;
     const opacity = 0.05;
 
     // Spacing between glyphs
     const hspace = 1.1;
-    const vspace = 1.3;
+    const vspace = 1.2;
     // Glyph dimensions
     const glyphW = fsize * hspace;
     const glyphH = fsize * vspace;
@@ -58,16 +58,7 @@ function rain() {
         ctx.shadowBlur = 0;
     }
 
-    const R = () => randInt(100, 250);
-    const color = (x, y) => {
-        const r = R() * y / height * 1.2 | 0;
-        const g = R() * x / width * 1.667 * 0.9 | 0;
-        const b = R() * ((height - y) * 2 / x) / (height/width) * 0.4 | 0;
-        return `rgb(${r}, ${g}, ${b})`;
-    };
-
-    const fps = 35;
-    const fpsInterval = 1000 / fps;
+    const fpsInterval = 1000 / options.fps;
     let then = Date.now();
 
     (loop = () => {
@@ -92,7 +83,7 @@ function rain() {
             const x = unused / 2 + i * glyphW;
 
             // Draw character
-            ctx.fillStyle = color(x, y);
+            ctx.fillStyle = 'green';
             ctx.fillText(char, x, y);
 
             // Reset if raindrop is some distance past bottom of screen
@@ -103,7 +94,9 @@ function rain() {
 }
 
 (() => {
+    const options = {
+        fps: 35, // (Speed)
+    };
     setUp();
-    rain();
+    rain(options);
 })();
-
