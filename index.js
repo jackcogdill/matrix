@@ -31,7 +31,7 @@ function rain(options) {
     const alpha = "0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ";
 
     const fsize = 14;
-    const font = `${fsize}pt 'Hack', 'Ubuntu Light', monospace`;
+    const font = `${fsize}pt monospace`;
     const opacity = 0.05;
 
     // Spacing between glyphs
