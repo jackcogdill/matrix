@@ -4,29 +4,39 @@ function randInt(min, max) {
     return min + Math.floor(Math.random() * (max - min));
 }
 
-function animate(innerFunction, baseCase, fps = 35) {
-    const fpsInterval = 1000 / fps;
-    let then = Date.now();
-    let done = false;
+function animate(innerFunction, baseCase, fps) {
+    if (fps) {
+        const fpsInterval = 1000 / fps;
+        let then = Date.now();
+        let done = false;
 
-    function loop(callback) {
-        if (done) {
-            callback();
-            return;
+        function loop(callback) {
+            if (done) {
+                callback();
+                return;
+            }
+
+            requestAnimationFrame(() => loop(callback));
+            // Enforce FPS
+            const now = Date.now();
+            const elapsed = now - then;
+            if (elapsed <= fpsInterval) return;
+            then = now - (elapsed % fpsInterval);
+
+            baseCase() ? done = true : innerFunction();
         }
-
-        requestAnimationFrame(() => loop(callback));
-
-        // Enforce FPS
-        const now = Date.now();
-        const elapsed = now - then;
-        if (elapsed <= fpsInterval) return;
-        then = now - (elapsed % fpsInterval);
-
-        baseCase() ? done = true : innerFunction();
+        return new Promise(resolve => loop(resolve));
+    } else {
+        function loop(callback) {
+            if (baseCase()) {
+                callback();
+                return;
+            }
+            requestAnimationFrame(() => loop(callback));
+            innerFunction();
+        }
+        return new Promise(resolve => loop(resolve));
     }
-
-    return new Promise(resolve => loop(resolve));
 }
 
 // Main functions
@@ -214,10 +224,11 @@ async function rain(_options = {}) {
         drawPerma();
     }
 
-    await animate(fall, () => numFinished === numDrops);
+    const { fps } = options;
+    await animate(fall, () => numFinished === numDrops, fps);
 
     let i = 0;
-    await animate(fade, () => i++ === 35);
+    await animate(fade, () => i++ === 35, fps);
 }
 
 (async () => {
