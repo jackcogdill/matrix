@@ -53,12 +53,11 @@ function rain(_options = {}) {
     // Initialization Variables
     // ================================
     const { message } = options;
-    let _numDrops = Math.floor(width / glyphW);
+    let numDrops = Math.floor(width / glyphW);
     // Both 'numDrops' and 'message.length' must be either even or odd to easily center
-    if ((_numDrops + message.length) & 1) {
-        _numDrops--;
+    if ((numDrops + message.length) & 1) {
+        numDrops--;
     }
-    const numDrops = _numDrops;
 
     // Unused (horizontal) canvas space
     const unused = width - numDrops * glyphW + fsize * (hspace - 1);
@@ -96,20 +95,24 @@ function rain(_options = {}) {
         ctx.shadowBlur = 0;
     }
 
-    // Enforce FPS
+    // FPS Setup
+    // ================================
     const { fps } = options;
     const fpsInterval = 1000 / fps;
     let then = Date.now();
 
-    (loop = () => {
+    let callbackAfterRain;
+
+    function loop(callback) {
         // Base case
         if (numFinished === numDrops) {
-            console.log('All done!');
+            callback();
             return;
         }
 
-        requestAnimationFrame(loop);
-
+        // Animation
+        // ================================
+        requestAnimationFrame(() => loop(callback));
         // Enforce FPS
         const now = Date.now();
         const elapsed = now - then;
@@ -169,10 +172,15 @@ function rain(_options = {}) {
 
             return [y, perma, done];
         });
-    })();
+    }
+
+    return new Promise((resolve, reject) => {
+        loop(resolve);
+    });
 }
 
-(() => {
+(async () => {
     setUp();
-    rain();
+    await rain();
+    console.log('All done!');
 })();
