@@ -128,7 +128,7 @@ async function rain(_options = {}) {
         ctx.shadowColor = 'white';
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = fsize * 2;
     }
 
     function resetShadow() {
@@ -163,7 +163,7 @@ async function rain(_options = {}) {
                     }
 
                     addShadow();
-                    ctx.fillStyle = brightB;
+                    ctx.fillStyle = 'white';
                     ctx.fillText(char, x, y);
                     resetShadow();
                 } else {
