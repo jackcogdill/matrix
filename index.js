@@ -185,9 +185,8 @@ async function rain(_options = {}) {
                 const char = alpha.charAt(index);
                 const x = padding + i * glyphW;
 
-                ctx.fillStyle = (Math.random() > 0.97) ?
-                    (Math.random() > 0.67) ? brightB : brightA
-                    : normal;
+                // 3% brighter color
+                ctx.fillStyle = (Math.random() > 0.97) ? brightB : normal;
                 ctx.fillText(char, x, y);
 
                 const shouldReset = y > randInt(height, height * 1.667);
