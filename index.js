@@ -77,7 +77,7 @@ async function rain(_options = {}) {
     const options = Object.assign({}, defaults, _options);
 
     const alpha = '0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
-    const alphaUpper = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const hex = '0123456789ABCDEF';
 
     // Colors
     // ================================
@@ -231,7 +231,7 @@ async function rain(_options = {}) {
     let tries = 0;
     function disappear(maxTries) {
         tries++;
-        drawBackground('rgba(0, 0, 0, 0.85)');
+        drawBackground('rgba(0, 0, 0, 0.45)');
         ctx.fillStyle = normal;
 
         drops = drops.map(({ y, perma, done, char }, i) => {
@@ -242,8 +242,8 @@ async function rain(_options = {}) {
                 if (char === undefined) {
                     char = message.charAt(i - textLeft);
                 }
-                if (Math.random() > 0.65) {
-                    char = choice(alphaUpper);
+                if (Math.random() > 0.75) {
+                    char = choice(hex);
                 }
 
                 const x = padding + i * glyphW;
@@ -263,7 +263,7 @@ async function rain(_options = {}) {
     await animate(fall, () => numFinished === numDrops, fps);
 
     let i = 0;
-    await animate(fadeBackground, () => i++ === 35, fps);
+    await animate(fadeBackground, () => i++ === 25, fps);
 
     const disappearFps = fps / 2;
     const maxSeconds = 1;
