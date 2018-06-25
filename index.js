@@ -1,8 +1,8 @@
 // Util functions
 // ================================
-function randInt(min, max) {
-    return min + Math.floor(Math.random() * (max - min));
-}
+const randInt = (min, max) => min + Math.floor(Math.random() * (max - min));
+
+const choice = str => str.charAt(randInt(0, str.length));
 
 function animate(innerFunction, baseCase, fps) {
     if (fps) {
@@ -77,6 +77,7 @@ async function rain(_options = {}) {
     const options = Object.assign({}, defaults, _options);
 
     const alpha = '0123456789ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜｦﾝ';
+    const alphaUpper = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
     // Colors
     // ================================
@@ -119,6 +120,7 @@ async function rain(_options = {}) {
     // Raindrop Initialization
     // ================================
     let drops = [];
+    let numPerma = 0;
     for (let i = 0; i < numDrops; i++) {
         // Start randomly above screen
         let y = -1 * randInt(0, height / glyphH) * glyphH;
@@ -130,11 +132,15 @@ async function rain(_options = {}) {
             && message.charAt(i - textLeft) !== ' ' // Spaces are not permanent letters
         );
 
+        if (perma) numPerma++;
+
         drops.push({ y: y, perma: perma, done: false });
     }
     let numFinished = 0;
     let shouldStop = false;
 
+    // Canvas Drawing Functions
+    // ================================
     function addShadow() {
         ctx.shadowColor = 'white';
         ctx.shadowOffsetX = 0;
@@ -147,11 +153,13 @@ async function rain(_options = {}) {
         ctx.shadowBlur = 0;
     }
 
-    function drawBackground() {
-        ctx.fillStyle = background;
+    function drawBackground(fillStyle = background) {
+        ctx.fillStyle = fillStyle;
         ctx.fillRect(0, 0, width, height);
     }
 
+    // Animation Functions
+    // ================================
     function fall() {
         drawBackground();
 
@@ -181,8 +189,7 @@ async function rain(_options = {}) {
                     ctx.fillText(char, x, y);
                 }
             } else if (!done) {
-                const index = randInt(0, alpha.length);
-                const char = alpha.charAt(index);
+                const char = choice(alpha);
                 const x = padding + i * glyphW;
 
                 // 3% brighter color
@@ -207,7 +214,8 @@ async function rain(_options = {}) {
         });
     }
 
-    function drawPerma() {
+    function fadeBackground() {
+        drawBackground();
         ctx.fillStyle = normal;
 
         drops.forEach(({ y, perma }, i) => {
@@ -219,16 +227,50 @@ async function rain(_options = {}) {
         });
     }
 
-    function fade() {
-        drawBackground();
-        drawPerma();
+    let numGone = 0;
+    let tries = 0;
+    function disappear(maxTries) {
+        tries++;
+        drawBackground('rgba(0, 0, 0, 0.85)');
+        ctx.fillStyle = normal;
+
+        drops = drops.map(({ y, perma, done, char }, i) => {
+            if (!perma) return { perma };
+
+            let gone = !done;
+            if (!gone) {
+                if (char === undefined) {
+                    char = message.charAt(i - textLeft);
+                }
+                if (Math.random() > 0.65) {
+                    char = choice(alphaUpper);
+                }
+
+                const x = padding + i * glyphW;
+                ctx.fillText(char, x, y);
+
+                // Kill if it's taking too long
+                if (Math.random() > 0.90 || tries > maxTries) {
+                    gone = true;
+                    numGone++;
+                }
+            }
+            return { y, perma, done: !gone, char };
+        });
     }
 
     const { fps } = options;
     await animate(fall, () => numFinished === numDrops, fps);
 
     let i = 0;
-    await animate(fade, () => i++ === 35, fps);
+    await animate(fadeBackground, () => i++ === 35, fps);
+
+    const disappearFps = fps / 2;
+    const maxSeconds = 1;
+    const maxTries = maxSeconds * disappearFps;
+    await animate(() => disappear(maxTries), () => numGone === numPerma, disappearFps);
+
+    drawBackground('black');
 }
 
 (async () => {
