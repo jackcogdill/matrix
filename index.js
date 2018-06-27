@@ -275,6 +275,6 @@ async function rain(_options = {}) {
 
 (async () => {
     setUp();
-    const message = isMobile ? 'WELCOME' : 'WELCOME, VISITOR';
+    const message = isMobile ? 'HELLO THERE.' : 'OH, WHY HELLO THERE.';
     await rain({ message });
 })();
