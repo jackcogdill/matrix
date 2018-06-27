@@ -42,7 +42,7 @@ function animate(innerFunction, baseCase, fps) {
 // Main functions
 // ================================
 function setUp() {
-    const canvas = document.getElementsByTagName('canvas')[0];
+    const canvas = document.getElementById('introCanvas');
 
     window.width = window.innerWidth;
     window.height = window.innerHeight;
@@ -89,7 +89,7 @@ async function rain(_options = {}) {
     // ================================
     const fsize = isMobile ? 48 : 14;
     ctx.font = `${fsize}pt monospace`;
-    const background = 'rgba(0, 0, 0, 0.05)';
+    const defaultBackground = 'rgba(0, 0, 0, 0.05)';
     // Spacing between glyphs
     const hspace = 1.1;
     const vspace = 1.2;
@@ -153,7 +153,7 @@ async function rain(_options = {}) {
         ctx.shadowBlur = 0;
     }
 
-    function drawBackground(fillStyle = background) {
+    function drawBackground(fillStyle = defaultBackground) {
         ctx.fillStyle = fillStyle;
         ctx.fillRect(0, 0, width, height);
     }
@@ -231,7 +231,7 @@ async function rain(_options = {}) {
     let tries = 0;
     function disappear(maxTries) {
         tries++;
-        drawBackground('rgba(0, 0, 0, 0.45)');
+        drawBackground('rgba(0, 0, 0, 0.5)');
         ctx.fillStyle = normal;
 
         drops = drops.map(({ y, perma, done, char }, i) => {
